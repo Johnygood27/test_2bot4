@@ -1,50 +1,34 @@
-const path               = require('path');
-const HtmlWebpackPlugin  = require('html-webpack-plugin');
-const webpack            = require('webpack');
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: 'development',
-  entry: './src/main.js',  // всё тянется из main.js
+  entry: './src/main.js',
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
     clean: true,
   },
+  mode: 'development',
   devServer: {
     static: './dist',
-    port: 5173,
-    hot: true,
-  },
-  experiments: {
-    asyncWebAssembly: true,
+    proxy: {
+      '/compute': 'http://localhost:3001',
+      '/decrypt': 'http://localhost:3001'
+    }
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',
-      inject: 'body',
-      scriptLoading: 'blocking',
-    }),
-    new webpack.ProvidePlugin({
-      global: require.resolve('globalthis'),
     }),
   ],
-  resolve: {
-    fallback: {
-      buffer : require.resolve('buffer/'),
-      events : require.resolve('events/'),
-      stream : require.resolve('stream-browserify'),
-      util   : require.resolve('util/'),
-      process: require.resolve('process/browser'),
-      crypto : false,
-      fs     : false,
-    },
-  },
   module: {
     rules: [
       {
-        test   : /\.js$/,
-        use    : 'babel-loader',
-        exclude: /node_modules|index\.html/,
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+        },
       },
     ],
   },
