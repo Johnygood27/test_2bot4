@@ -24,10 +24,11 @@ describe("EncryptedAdder", function () {
     await contract.connect(alice).setInputs(
       encrypted.handles[0],
       encrypted.handles[1],
-      encrypted.inputProof
+      encrypted.inputProof,
+      alice.address
     );
 
-    await contract.connect(alice).computeSum();
+    await contract.connect(alice).computeSum(alice.address);
 
     const sumHandle = await contract.getLatestSum();
 

@@ -75,20 +75,21 @@ window.addEventListener("DOMContentLoaded", async () => {
       const signer       = await provider.getSigner();
       const userAddress  = await signer.getAddress();
 
-      // b) Шаг 1: шифрование на вашем бэкенде
-      const encryptRes = await fetch(`${SERVER_URL}/encrypt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ a, b, userAddress })
-      });
-      const { handleA, handleB, proof } = await encryptRes.json();
+      // b) Шаг 1: шифрование на клиенте
+      const buffer = sdkInstance.createEncryptedInput(CONTRACT_ADDRESS, userAddress);
+      buffer.add64(a);
+      buffer.add64(b);
+      const { handles, inputProof } = await buffer.encrypt();
+      const encA = handles[0];
+      const encB = handles[1];
+      const proof = inputProof;
 
       // c) Шаг 2: вычисление на бэкенде
       status.textContent = "⚙️ Computing…";
       const computeRes = await fetch(`${SERVER_URL}/compute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handleA, handleB, proof })
+        body: JSON.stringify({ encA, encB, proof, userAddress })
       });
       const { sumHandle } = await computeRes.json();
 

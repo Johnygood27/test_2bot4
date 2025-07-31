@@ -18,8 +18,10 @@ contract EncryptedAdder is SepoliaConfig {
     function setInputs(
         externalEuint64 encA,
         externalEuint64 encB,
-        bytes calldata inputProof
+        bytes calldata inputProof,
+        address user
     ) external {
+        require(user != address(0), "invalid user");
         // Преобразуем внешние зашифрованные входы в euint64
         euint64 aInput = FHE.fromExternal(encA, inputProof);
         euint64 bInput = FHE.fromExternal(encB, inputProof);
@@ -33,10 +35,13 @@ contract EncryptedAdder is SepoliaConfig {
         FHE.allowThis(_b);
         FHE.allow(_a, msg.sender);
         FHE.allow(_b, msg.sender);
+        FHE.allow(_a, user);
+        FHE.allow(_b, user);
     }
 
     // Складывает A и B, сохраняет сумму в latestSum и выдаёт права
-    function computeSum() external {
+    function computeSum(address user) external {
+        require(user != address(0), "invalid user");
         // Проверяем, что оба значения инициализированы
         require(FHE.isInitialized(_a) && FHE.isInitialized(_b), "Values not set");
 
@@ -49,6 +54,7 @@ contract EncryptedAdder is SepoliaConfig {
         // Выдаём права на результат
         FHE.allowThis(latestSum);
         FHE.allow(latestSum, msg.sender);
+        FHE.allow(latestSum, user);
     }
 
     /// @notice Returns the last computed encrypted sum
