@@ -1,12 +1,28 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
+import inject from '@rollup/plugin-inject';
 
 export default defineConfig({
-  optimizeDeps: {
-    include: ['@zama-fhe/relayer-sdk']
+  root: resolve(__dirname, 'src'),
+  server: {
+    proxy: {
+      '/compute': 'http://localhost:3001',
+      '/decrypt': 'http://localhost:3001'
+    }
   },
   build: {
-    commonjsOptions: {
-      include: [/node_modules/]
+    outDir: resolve(__dirname, 'dist'),
+    emptyOutDir: true,
+    rollupOptions: {
+      plugins: [
+        inject({
+          Buffer: ['buffer', 'Buffer'],
+          process: 'process/browser'
+        })
+      ]
     }
+  },
+  optimizeDeps: {
+    include: ['@zama-fhe/relayer-sdk/web']
   }
 });
